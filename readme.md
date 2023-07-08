@@ -17,3 +17,9 @@ I added more errors for the incoming event ID3 (client is waiting):
 - If the client has not already come - 'ClientUnknown' error
 - If the client has already sat down - 'ClientHasAlreadySatDown' error
 - If the client has already waited - 'ClientHasAlreadyWaited' error
+
+## Others interesting projects
+___
+- [Bank (in progress)](https://github.com/andrew55516/Bank)
+- [Solvery](https://github.com/andrew55516/Solvery)
+- [vkCrawler (mvp)](https://github.com/andrew55516/vkCrawler)
