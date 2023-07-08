@@ -29,7 +29,7 @@ func main() {
 
 	i := 1
 	for scanner.Scan() {
-		row := scanner.Text()
+		row := strings.TrimSpace(scanner.Text())
 		switch i {
 		case 1:
 			tablesAmount, ok = internal.ParseInt(row)

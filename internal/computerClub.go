@@ -14,6 +14,7 @@ type ComputerClub struct {
 	FreeTables   int
 	Recorder     strings.Builder
 	WaitList     []string
+	WaitMap      map[string]struct{}
 	IsTableBusy  []bool
 	TablesInfo   []tableInfo
 	Clients      map[string]clientInfo
@@ -75,6 +76,7 @@ func NewComputerClub(openTime, closeTime, tablesAmount, costPerHour int) *Comput
 		FreeTables:   tablesAmount,
 		Recorder:     strings.Builder{},
 		WaitList:     make([]string, 0),
+		WaitMap:      make(map[string]struct{}, 0),
 		IsTableBusy:  make([]bool, tablesAmount),
 		TablesInfo:   make([]tableInfo, tablesAmount),
 		Clients:      make(map[string]clientInfo, 0),
@@ -155,7 +157,15 @@ func eventID3(club *ComputerClub, event Event) {
 		return
 	}
 
+	// If the client has already waited he can't be added to the wait list again
+	if _, ok := club.WaitMap[event.Name]; ok {
+		club.Recorder.WriteString(
+			fmt.Sprintf("%s 13 ClientHasBeenAlreadyWaited\n", ParseMinutesToTime(event.Time)))
+		return
+	}
+
 	if len(club.WaitList) == club.TablesAmount {
+		delete(club.Clients, event.Name)
 		club.Recorder.WriteString(
 			fmt.Sprintf("%s 11 %s\n",
 				ParseMinutesToTime(event.Time),
@@ -164,6 +174,7 @@ func eventID3(club *ComputerClub, event Event) {
 	}
 
 	club.WaitList = append(club.WaitList, event.Name)
+	club.WaitMap[event.Name] = struct{}{}
 }
 
 func eventID4(club *ComputerClub, event Event) {
@@ -172,6 +183,16 @@ func eventID4(club *ComputerClub, event Event) {
 		club.Recorder.WriteString(
 			fmt.Sprintf("%s 13 ClientUnknown\n", ParseMinutesToTime(event.Time)))
 		return
+	}
+
+	// If the client was in the wait list, we must remove him
+	if _, ok := club.WaitMap[event.Name]; ok {
+		delete(club.WaitMap, event.Name)
+		i := 0
+		for event.Name != club.WaitList[i] {
+			i++
+		}
+		club.WaitList = append(club.WaitList[:i], club.WaitList[i+1:]...)
 	}
 
 	if cl.table > 0 {
@@ -183,6 +204,7 @@ func eventID4(club *ComputerClub, event Event) {
 		if len(club.WaitList) > 0 {
 			next := club.WaitList[0]
 			club.WaitList = club.WaitList[1:]
+			delete(club.WaitMap, next)
 
 			club.Clients[next] = clientInfo{
 				table:     cl.table,
@@ -193,7 +215,7 @@ func eventID4(club *ComputerClub, event Event) {
 			club.IsTableBusy[cl.table-1] = true
 
 			club.Recorder.WriteString(
-				fmt.Sprintf("%s 12 %s\n", ParseMinutesToTime(event.Time), next))
+				fmt.Sprintf("%s 12 %s %d\n", ParseMinutesToTime(event.Time), next, cl.table))
 		}
 	}
 	delete(club.Clients, event.Name)
