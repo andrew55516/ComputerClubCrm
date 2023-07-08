@@ -70,7 +70,7 @@ func main() {
 		default:
 			event, ok := internal.ParseEvent(row, tablesAmount)
 			if !ok || event.Time < lastEventTime || event.Time > closeTime {
-				fmt.Printf("Error parsing event: %s\n", row)
+				fmt.Printf("Error parsing event in row %d: %s\n", i, row)
 				os.Exit(1)
 			}
 

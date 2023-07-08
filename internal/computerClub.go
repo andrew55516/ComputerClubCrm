@@ -147,7 +147,7 @@ func eventID3(club *ComputerClub, event Event) {
 	// If the client has already sat down he can't wait
 	if cl.table > 0 {
 		club.Recorder.WriteString(
-			fmt.Sprintf("%s 13 ClientHasBeenAlreadySatDown\n", ParseMinutesToTime(event.Time)))
+			fmt.Sprintf("%s 13 ClientHasAlreadySatDown\n", ParseMinutesToTime(event.Time)))
 		return
 	}
 
@@ -160,7 +160,7 @@ func eventID3(club *ComputerClub, event Event) {
 	// If the client has already waited he can't be added to the wait list again
 	if _, ok := club.WaitMap[event.Name]; ok {
 		club.Recorder.WriteString(
-			fmt.Sprintf("%s 13 ClientHasBeenAlreadyWaited\n", ParseMinutesToTime(event.Time)))
+			fmt.Sprintf("%s 13 ClientHasAlreadyWaited\n", ParseMinutesToTime(event.Time)))
 		return
 	}
 
